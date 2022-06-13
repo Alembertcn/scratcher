@@ -3,8 +3,9 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:scratcher/utils.dart';
+import 'utils.dart';
 
 import 'painter.dart';
 
@@ -33,6 +34,18 @@ double _getAccuracyValue(ScratchAccuracy accuracy) {
   }
 }
 
+ImageConfiguration createLocalImageConfiguration(BuildContext context,
+    {Size? size}) {
+  return ImageConfiguration(
+    bundle: DefaultAssetBundle.of(context),
+    devicePixelRatio: MediaQuery.maybeOf(context)?.devicePixelRatio ?? 1.0,
+    locale: Localizations.maybeLocaleOf(context),
+    textDirection: Directionality.maybeOf(context),
+    size: size,
+    platform: defaultTargetPlatform,
+  );
+}
+
 /// Scratcher widget which covers given child with scratchable overlay.
 class Scratcher extends StatefulWidget {
   Scratcher({
@@ -50,6 +63,7 @@ class Scratcher extends StatefulWidget {
     this.onScratchStart,
     this.onScratchUpdate,
     this.onScratchEnd,
+    this.contentKey,
   }) : super(key: key);
 
   /// Widget rendered under the scratch area.
@@ -92,6 +106,8 @@ class Scratcher extends StatefulWidget {
   /// Callback called when scratching ends
   final VoidCallback? onScratchEnd;
 
+  final GlobalKey? contentKey;
+
   @override
   ScratcherState createState() => ScratcherState();
 }
@@ -118,14 +134,18 @@ class ScratcherState extends State<Scratcher> {
 
   @override
   void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     if (widget.image == null) {
       final completer = Completer<ui.Image?>()..complete();
       _imageLoader = completer.future;
     } else {
       _imageLoader = _loadImage(widget.image!);
     }
-
-    super.initState();
   }
 
   @override
@@ -136,6 +156,13 @@ class ScratcherState extends State<Scratcher> {
         if (snapshot.connectionState != ConnectionState.waiting) {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
+            // onPanDown: canScratch
+            //     ? (details) {
+            //   widget.onScratchStart?.call();
+            //   if (widget.enabled) {
+            //     _addPoint(details.localPosition);
+            //   }
+            // }: null,
             onPanStart: canScratch
                 ? (details) {
                     widget.onScratchStart?.call();
@@ -177,7 +204,7 @@ class ScratcherState extends State<Scratcher> {
                             _setCheckpoints(size);
                           } else if (_lastKnownSize != size &&
                               widget.rebuildOnResize) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                            WidgetsBinding.instance?.addPostFrameCallback((_) {
                               reset();
                             });
                           }
@@ -199,7 +226,8 @@ class ScratcherState extends State<Scratcher> {
   Future<ui.Image> _loadImage(Image image) async {
     final completer = Completer<ui.Image>();
     final imageProvider = image.image as dynamic;
-    final key = await imageProvider.obtainKey(const ImageConfiguration());
+    final key =
+        await imageProvider.obtainKey(createLocalImageConfiguration(context));
 
     imageProvider.load(key, (
       Uint8List bytes, {
@@ -249,11 +277,15 @@ class ScratcherState extends State<Scratcher> {
     if (point != null && !checked.contains(point)) {
       checked.add(point);
 
-      final radius = widget.brushSize / 2;
-      checkpoints.removeWhere(
-        (checkpoint) => _inCircle(checkpoint, point!, radius),
-      );
+      final reached = <Offset>{};
+      for (final checkpoint in checkpoints) {
+        final radius = widget.brushSize / 2;
+        if (_inCircle(checkpoint, point, radius)) {
+          reached.add(checkpoint);
+        }
+      }
 
+      checkpoints = checkpoints.difference(reached);
       progress =
           ((totalCheckpoints - checkpoints.length) / totalCheckpoints) * 100;
       if (progress - progressReported >= _progressReportStep ||
@@ -283,6 +315,15 @@ class ScratcherState extends State<Scratcher> {
   }
 
   List<Offset> _calculateCheckpoints(Size size) {
+    RenderBox? contentBox =
+        widget.contentKey?.currentContext?.findRenderObject() as RenderBox?;
+
+    var srcRect = contentBox != null
+        ? (contentBox.localToGlobal(Offset.zero,
+                ancestor: context.findRenderObject()) &
+            contentBox.size)
+        : null;
+
     final accuracy = _getAccuracyValue(widget.accuracy);
     final xOffset = size.width / accuracy;
     final yOffset = size.height / accuracy;
@@ -290,11 +331,12 @@ class ScratcherState extends State<Scratcher> {
     final points = <Offset>[];
     for (var x = 0; x < accuracy; x++) {
       for (var y = 0; y < accuracy; y++) {
-        final point = Offset(
+        var point = Offset(
           x * xOffset,
           y * yOffset,
         );
-        points.add(point);
+
+        if (srcRect?.contains(point) != false) points.add(point);
       }
     }
 
