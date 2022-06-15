@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -6,7 +7,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'utils.dart';
-
 import 'painter.dart';
 
 const _progressReportStep = 0.1;
@@ -124,7 +124,7 @@ class ScratcherState extends State<Scratcher> {
   double progressReported = 0;
   bool thresholdReported = false;
   bool isFinished = false;
-  bool canScratch = true;
+  bool canScratch = Platform.isAndroid;
   Duration? transitionDuration;
   Size? _lastKnownSize;
 
