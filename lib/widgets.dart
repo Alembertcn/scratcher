@@ -348,7 +348,7 @@ class ScratcherState extends State<Scratcher> {
     setState(() {
       transitionDuration = duration;
       isFinished = false;
-      canScratch = duration == null;
+      canScratch = Platform.isAndroid;
       thresholdReported = false;
 
       _lastPosition = null;
@@ -362,7 +362,7 @@ class ScratcherState extends State<Scratcher> {
     if (duration != null) {
       Future.delayed(duration, () {
         setState(() {
-          canScratch = true;
+          canScratch = Platform.isAndroid;
         });
       });
     }
