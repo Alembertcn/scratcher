@@ -205,7 +205,9 @@ class ScratcherState extends State<Scratcher> {
                           } else if (_lastKnownSize != size &&
                               widget.rebuildOnResize) {
                             WidgetsBinding.instance?.addPostFrameCallback((_) {
-                              reset();
+                              
+                              
+                              ();
                             });
                           }
 
@@ -348,7 +350,7 @@ class ScratcherState extends State<Scratcher> {
     setState(() {
       transitionDuration = duration;
       isFinished = false;
-      canScratch = duration == null;
+      canScratch = Platform.isAndroid;
       thresholdReported = false;
 
       _lastPosition = null;
