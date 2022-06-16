@@ -1,4 +1,5 @@
 # scratcher
+tag-->v2.0
 
 Scratch card widget which temporarily hides content from the user.
 
