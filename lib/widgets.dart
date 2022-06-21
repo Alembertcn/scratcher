@@ -46,11 +46,13 @@ ImageConfiguration createLocalImageConfiguration(BuildContext context,
   );
 }
 
+typedef ChildBuilder = Widget Function(GlobalKey? conenterKey);
+
 /// Scratcher widget which covers given child with scratchable overlay.
 class Scratcher extends StatefulWidget {
   Scratcher({
     Key? key,
-    required this.child,
+    required this.childBuilder,
     this.enabled = true,
     this.threshold,
     this.brushSize = 25,
@@ -63,11 +65,10 @@ class Scratcher extends StatefulWidget {
     this.onScratchStart,
     this.onScratchUpdate,
     this.onScratchEnd,
-    this.contentKey,
   }) : super(key: key);
 
   /// Widget rendered under the scratch area.
-  final Widget child;
+  final ChildBuilder childBuilder;
 
   /// Whether new scratches can be applied
   final bool enabled;
@@ -106,7 +107,7 @@ class Scratcher extends StatefulWidget {
   /// Callback called when scratching ends
   final VoidCallback? onScratchEnd;
 
-  final GlobalKey? contentKey;
+  final GlobalKey contentKey = GlobalKey();
 
   @override
   ScratcherState createState() => ScratcherState();
@@ -190,7 +191,7 @@ class ScratcherState extends State<Scratcher> {
             child: AnimatedSwitcher(
               duration: transitionDuration ?? Duration.zero,
               child: isFinished
-                  ? widget.child
+                  ? widget.childBuilder(null)
                   : CustomPaint(
                       foregroundPainter: ScratchPainter(
                         image: snapshot.data,
@@ -212,7 +213,7 @@ class ScratcherState extends State<Scratcher> {
                           _lastKnownSize = size;
                         },
                       ),
-                      child: widget.child,
+                      child: widget.childBuilder(widget.contentKey),
                     ),
             ),
           );
@@ -316,7 +317,7 @@ class ScratcherState extends State<Scratcher> {
 
   List<Offset> _calculateCheckpoints(Size size) {
     RenderBox? contentBox =
-        widget.contentKey?.currentContext?.findRenderObject() as RenderBox?;
+        widget.contentKey.currentContext?.findRenderObject() as RenderBox?;
 
     var srcRect = contentBox != null
         ? (contentBox.localToGlobal(Offset.zero,

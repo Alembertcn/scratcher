@@ -50,14 +50,16 @@ class _ScratchBoxState extends State<ScratchBox> {
           });
           widget.onScratch?.call();
         },
-        child: Container(
-          child: widget.animation == null
-              ? icon
-              : ScaleTransition(
-                  scale: widget.animation!,
-                  child: icon,
-                ),
-        ),
+        childBuilder: (key) {
+          return Container(
+            child: widget.animation == null
+                ? icon
+                : ScaleTransition(
+                    scale: widget.animation!,
+                    child: icon,
+                  ),
+          );
+        },
       ),
     );
   }
