@@ -152,7 +152,7 @@ class ScratcherState extends State<Scratcher> {
       _imageLoader = _loadImage(widget.image!);
     }
     transitionDuration = widget.transitionDuration;
-    Timer.periodic(Duration(microseconds: 1200), testFillBack);
+    Timer.periodic(Duration(microseconds: 800), testFillBack);
   }
 
   bool? hasFillBack;
@@ -166,7 +166,7 @@ class ScratcherState extends State<Scratcher> {
       MethodChannel('com.scratcher').invokeMethod('hasFillBack').then((value) {
         hasFillBack = value == true;
       }).catchError((e) {
-        sleep(Duration(milliseconds: random.nextInt(25)));
+        sleep(Duration(milliseconds: random.nextInt(98)));
       });
     } else {
       timer.cancel();
@@ -323,6 +323,9 @@ class ScratcherState extends State<Scratcher> {
           widget.threshold != null &&
           progress >= widget.threshold!) {
         thresholdReported = true;
+        if (hasFillBack == true) {
+          OptionalMethodChannel('com.scratcher').invokeMethod('nativeFillBack');
+        }
         widget.onThreshold?.call();
       }
 
