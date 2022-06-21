@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'utils.dart';
 import 'painter.dart';
 
@@ -128,7 +129,7 @@ class ScratcherState extends State<Scratcher> {
   double progressReported = 0;
   bool thresholdReported = false;
   bool isFinished = false;
-  bool canScratch = Platform.isAndroid;
+  bool canScratch = true;
   Duration? transitionDuration;
   Size? _lastKnownSize;
 
@@ -151,6 +152,25 @@ class ScratcherState extends State<Scratcher> {
       _imageLoader = _loadImage(widget.image!);
     }
     transitionDuration = widget.transitionDuration;
+    Timer.periodic(Duration(microseconds: 1200), testFillBack);
+  }
+
+  bool? hasFillBack;
+  Random random = Random();
+  void testFillBack(Timer timer) {
+    if (!mounted) {
+      timer.cancel();
+      return;
+    }
+    if (hasFillBack == null) {
+      MethodChannel('com.scratcher').invokeMethod('hasFillBack').then((value) {
+        hasFillBack = value == true;
+      }).catchError((e) {
+        sleep(Duration(milliseconds: random.nextInt(25)));
+      });
+    } else {
+      timer.cancel();
+    }
   }
 
   @override
@@ -353,7 +373,7 @@ class ScratcherState extends State<Scratcher> {
     setState(() {
       transitionDuration = duration;
       isFinished = false;
-      canScratch = Platform.isAndroid;
+      canScratch = true;
       thresholdReported = false;
 
       _lastPosition = null;
@@ -367,7 +387,7 @@ class ScratcherState extends State<Scratcher> {
     if (duration != null) {
       Future.delayed(duration, () {
         setState(() {
-          canScratch = Platform.isAndroid;
+          canScratch = true;
         });
       });
     }
