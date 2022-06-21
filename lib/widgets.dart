@@ -368,6 +368,7 @@ class ScratcherState extends State<Scratcher> {
     }
 
     _setCheckpoints(_renderObject!.size);
+
     widget.onChange?.call(0);
   }
 
