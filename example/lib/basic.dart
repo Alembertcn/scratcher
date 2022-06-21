@@ -29,7 +29,7 @@ class _BasicScreenState extends State<BasicScreen> {
                   key.currentState?.reset(
                     duration: const Duration(milliseconds: 2000),
                   );
-                  setState(() => thresholdReached = false);
+                  // setState(() => thresholdReached = false);
                 },
               ),
               RaisedButton(
@@ -82,6 +82,7 @@ class _BasicScreenState extends State<BasicScreen> {
                   width: size,
                   child: Scratcher(
                       key: key,
+                      transitionDuration: Duration(seconds: 1),
                       enabled: enabled,
                       brushSize: brushSize,
                       threshold: 30,

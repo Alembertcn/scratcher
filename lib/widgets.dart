@@ -65,7 +65,10 @@ class Scratcher extends StatefulWidget {
     this.onScratchStart,
     this.onScratchUpdate,
     this.onScratchEnd,
+    this.transitionDuration = const Duration(milliseconds: 500),
   }) : super(key: key);
+
+  Duration? transitionDuration;
 
   /// Widget rendered under the scratch area.
   final ChildBuilder childBuilder;
@@ -147,6 +150,7 @@ class ScratcherState extends State<Scratcher> {
     } else {
       _imageLoader = _loadImage(widget.image!);
     }
+    transitionDuration = widget.transitionDuration;
   }
 
   @override
