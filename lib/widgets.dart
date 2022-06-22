@@ -214,6 +214,16 @@ class ScratcherState extends State<Scratcher> {
                 : null,
             child: AnimatedSwitcher(
               duration: transitionDuration ?? Duration.zero,
+              transitionBuilder: (child, animation) {
+                if (animation.isCompleted) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                } else {
+                  return child;
+                }
+              },
               child: isFinished
                   ? widget.childBuilder(null)
                   : CustomPaint(
