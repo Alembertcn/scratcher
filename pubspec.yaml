@@ -5,7 +5,7 @@ homepage: https://github.com/vintage/scratcher
 version: 2.2.1
 
 environment:
-  sdk: ">=2.13.0 <3.0.0"
+  sdk: ">=2.13.0 <4.0.0"
   flutter: ">=2.2.0"
 
 dependencies:
@@ -16,3 +16,8 @@ dev_dependencies:
   lint:
   flutter_test:
     sdk: flutter
+
+flutter:
+  assets:
+    - icons/eye_hide_cloud.png
+    - assets/images/eye_hide_cloud.png
