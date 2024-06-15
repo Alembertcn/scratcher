@@ -19,5 +19,3 @@ dev_dependencies:
 
 flutter:
   assets:
-    - icons/eye_hide_cloud.png
-    - assets/images/eye_hide_cloud.png
